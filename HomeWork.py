@@ -57,7 +57,7 @@ for i in range(numberOfInputs):
     if(distanceList[i] > max):
         max = distanceList[i]
         maxIndex = i
-    #else if distance < min then min = distance
+    #elif distance < min then min = distance
     elif(distanceList[i] < min):
         min = distanceList[i]
         minIndex = i
