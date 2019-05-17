@@ -1,0 +1,79 @@
+import pandas as pd 
+import numpy as np 
+import matplotlib.pyplot as plt 
+import statsmodels.api as sm
+from statsmodels.tsa.seasonal import seasonal_decompose
+from statsmodels.tsa.api import Holt
+
+def estimate_holt(df, seriesname, alpha=0.2, slope=0.1, trend="add"):
+    numbers = np.asarray(df[seriesname], dtype='float')
+    model = Holt(numbers)
+    fit = model.fit(alpha, slope, trend)
+    estimate = fit.forecast(1)[-1]
+    return estimate
+
+def decomp(frame,name,f,mod='Additive'):
+    #frame['Day'] = pd.to_datetime(frame['Date'])
+    series = frame[name]
+    array = np.asarray(series, dtype=float)
+    result = sm.tsa.seasonal_decompose(array,freq=f,model=mod,two_sided=False)
+    
+    result.plot()
+    plt.show() 
+    return result
+df = pd.read_csv("HW03_USD_TRY_Trading.txt", sep= "\t")
+fifteenFiftyEight = df.drop(len(df)-1)
+fifteenFifthSeven = df.drop(len(df)-1)
+df.set_index('Day')
+df.info()
+print("Percentage of missing values")
+print( df.isna().mean().round(4)*100)  
+seriesname = 'Volume'
+print("Method 1 - dropna()")
+df2 = df.dropna()
+df2.info()
+print("Percentage of missing values")
+print( df2.isna().mean().round(4)*100)  
+result = decomp(df2,seriesname,f=1440)
+
+volumes = round( estimate_holt(df2, seriesname, alpha=0.2, slope=0.1, trend="add"), 2)
+print("Estimation on next 15:57 volume is:", volumes, " by dropna method")
+##########################15:58
+df.add_suffix(interest)
+df2 = df.dropna()
+
+result = decomp(df2,seriesname,f=1440)
+
+volumes = round( estimate_holt(df2, seriesname, alpha=0.2, slope=0.1, trend="add"), 2)
+print("Estimation on next 15:58 volume is:", volumes, " by dropna method")
+
+
+print("Method 2 - fillna")
+# Load data
+df = pd.read_csv("HW03_USD_TRY_Trading.txt", sep= "\t")
+fifteenFiftyEight = df.drop(len(df)-1)
+fifteenFifthSeven = df.drop(len(df)-1)
+# replace , with . 
+
+df.set_index('Day')
+# forward fill
+df3 = df.fillna(method ='ffill')
+# backward fill
+df3 = df3.fillna(method ='bfill') 
+
+df3.info()
+print("Percentage of missing values")
+print( df3.isna().mean().round(4)*100)  
+seriesname = 'Volume'
+result = decomp(df3,seriesname,f=1440)
+
+volumes = round( estimate_holt(df3, seriesname, alpha=0.2, slope=0.1, trend="add"), 2)
+print("Estimation on next 15:57 volumerate is:", volumes, " by fillna method ")
+
+df.add_suffix(volumes)
+result = decomp(df3,seriesname,f=1440)
+
+volumes = round( estimate_holt(df3, seriesname, alpha=0.2, slope=0.1, trend="add"), 2)
+print("Estimation on 15:58 volume is:", volumes, " by fillna method ")
+
+
